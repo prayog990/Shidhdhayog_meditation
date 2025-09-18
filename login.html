@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Supabase Auth Example</title>
+</head>
+<body>
+  <h2>Sign Up</h2>
+  <form id="signup-form">
+    <input type="text" id="signup-name" placeholder="आपका पूरा नाम" required />
+    <input type="email" id="signup-email" placeholder="Email" required />
+    <input type="password" id="signup-password" placeholder="Password" required />
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <h2>Log In</h2>
+  <form id="login-form">
+    <input type="email" id="login-email" placeholder="Email" required />
+    <input type="password" id="login-password" placeholder="Password" required />
+    <button type="submit">Log In</button>
+  </form>
+
+  <!-- ✅ नया गेस्ट बटन यहाँ से शुरू ✅ -->
+  <div style="text-align: center; margin-top: 20px;">
+    <p>या</p>
+    <button id="guest-login-btn" style="background: #4a5568; padding: 10px 20px; border: none; color: white; border-radius: 5px; cursor: pointer; font-size: 16px;">
+       मेहमान की तरह आगे बढ़ें
+    </button>
+  </div>
+
+  <!-- मैसेज दिखाने के लिए -->
+  <p id="message"></p>
+
+  
+
+  <!-- Supabase JS v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // Supabase क्लाइंट सेटअप करें
+    const SUPABASE_URL = "https://dskxbznrmnytmvcrllja.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRza3hiem5ybW55dG12Y3JsbGphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3OTc2NDIsImV4cCI6MjA3MzM3MzY0Mn0.jTNx3kdO5K8tDtfwNPm1MrFD3TDiyybPOzv5oC4diGg";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const messageEl = document.getElementById("message");
+
+    // Sign Up Form handler
+    document.getElementById("signup-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      // Step 1: अब हम नाम, ईमेल, और पासवर्ड, तीनों को पकड़ेंगे
+      const fullName = document.getElementById("signup-name").value;
+      const email = document.getElementById("signup-email").value;
+      const password = document.getElementById("signup-password").value;
+
+      // Step 2: पहले यूज़र का Auth अकाउंट बनाएँगे
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        messageEl.textContent = "Sign Up Error: " + error.message;
+        return; // अगर कोई गलती हो तो यहीं रुक जाओ
+      }
+
+      // Step 3: अगर Auth अकाउंट बन गया, तो 'profiles' टेबल में उसकी प्रोफाइल बनाओ
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles') // 'profiles' टेबल को चुनो
+          .insert([
+            { 
+              id: data.user.id,    // Auth यूज़र की ID को यहाँ लिंक करो
+              username: fullName  // ✅ बस यही एक शब्द बदला है!
+            }
+          ]);
+
+        if (profileError) {
+          messageEl.textContent = "Profile बनाने में गलती हुई: " + profileError.message;
+        } else {
+          messageEl.textContent = "बहुत बढ़िया! कन्फर्म करने के लिए अपना ईमेल चेक करें।";
+        }
+      }
+    });
+
+    // Log In Form handler
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        messageEl.textContent = "Login Error: " + error.message;
+      } else {
+        // ✅ यही है वो नई जादुई लाइन जो उसे अंदर भेजेगी ✅
+        window.location.href = "index.html"; 
+      }
+    });
+
+    // ✅ --- नया गेस्ट लॉगिन का कोड यहाँ से शुरू --- ✅
+    // Guest Login handler
+    document.getElementById("guest-login-btn").addEventListener("click", async () => {
+      const { data, error } = await supabase.auth.signInAnonymously();
+
+      if (error) {
+        messageEl.textContent = "Guest Login Error: " + error.message;
+      } else {
+        // गेस्ट लॉगिन सफल हुआ, अब मुख्य पेज पर भेजो
+        window.location.href = "index.html";
+      }
+    });
+
+    
+  </script>
+</body>
+</html>
