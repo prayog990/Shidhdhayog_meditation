@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>लॉगिन - शिद्धयोग ध्यान</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --text-color: #ffffff;
+            --input-bg: rgba(0, 0, 0, 0.2);
+            --input-border: rgba(255, 255, 255, 0.3);
+            --btn-bg: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            --link-color: #c7d2fe;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .auth-container h2 {
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 16px;
+        }
+        .form-group input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: var(--btn-bg);
+            color: var(--text-color);
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .form-switch-link, .forgot-password-link {
+            color: var(--link-color);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .form-switch-link:hover, .forgot-password-link:hover { text-decoration: underline; }
+        .form-footer { margin-top: 25px; }
+        .forgot-password-container { text-align: right; margin-top: -10px; margin-bottom: 20px; }
+        #signup-form, #reset-password-form { display: none; }
+        #message { margin-top: 20px; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div id="login-form">
+            <h2>लॉगिन करें</h2>
+            <form>
+                <div class="form-group">
+                    <input type="email" id="login-email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="login-password" placeholder="Password" required>
+                </div>
+                <div class="forgot-password-container">
+                    <a class="forgot-password-link" id="forgot-password-btn">पासवर्ड भूल गए?</a>
+                </div>
+                <button type="submit" class="btn-submit">लॉगिन</button>
+            </form>
+            <p class="form-footer">
+                नया अकाउंट बनाना है? <a class="form-switch-link" id="show-signup">साइन अप करें</a>
+            </p>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signup-form">
+            <h2>नया अकाउंट बनाएँ</h2>
+            <form>
+                <div class="form-group">
+                    <input type="text" id="signup-name" placeholder="आपका पूरा नाम" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="signup-email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="signup-password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn-submit">साइन अप</button>
+            </form>
+            <p class="form-footer">
+                पहले से अकाउंट है? <a class="form-switch-link" id="show-login">लॉगिन करें</a>
+            </p>
+        </div>
+        
+        <!-- Reset Password Form -->
+        <div id="reset-password-form">
+            <h2>पासवर्ड रीसेट करें</h2>
+            <form>
+                <div class="form-group">
+                    <input type="email" id="reset-email" placeholder="अपना रजिस्टर्ड Email डालें" required>
+                </div>
+                <button type="submit" class="btn-submit">रीसेट लिंक भेजें</button>
+            </form>
+            <p class="form-footer">
+                 <a class="form-switch-link" id="back-to-login">वापस लॉगिन पर जाएँ</a>
+            </p>
+        </div>
+
+        <p id="message"></p>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // --- Supabase Client Setup ---
+    const SUPABASE_URL = "https://dskxbznrmnytmvcrllja.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRza3hiem5ybW55dG12Y3JsbGphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3OTc2NDIsImV4cCI6MjA3MzM3MzY0Mn0.jTNx3kdO5K8tDtfwNPm1MrFD3TDiyybPOzv5oC4diGg";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // --- Element References ---
+    const loginFormContainer = document.getElementById('login-form');
+    const signupFormContainer = document.getElementById('signup-form');
+    const resetPasswordFormContainer = document.getElementById('reset-password-form');
+    const messageEl = document.getElementById('message');
+
+    // --- Form Switching Logic ---
+    document.getElementById('show-signup').addEventListener('click', () => {
+        loginFormContainer.style.display = 'none';
+        resetPasswordFormContainer.style.display = 'none';
+        signupFormContainer.style.display = 'block';
+    });
+    document.getElementById('show-login').addEventListener('click', () => {
+        signupFormContainer.style.display = 'none';
+        loginFormContainer.style.display = 'block';
+    });
+    document.getElementById('forgot-password-btn').addEventListener('click', () => {
+        loginFormContainer.style.display = 'none';
+        resetPasswordFormContainer.style.display = 'block';
+    });
+    document.getElementById('back-to-login').addEventListener('click', () => {
+        resetPasswordFormContainer.style.display = 'none';
+        loginFormContainer.style.display = 'block';
+    });
+
+
+    // --- Signup Form Handler ---
+    signupFormContainer.querySelector('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fullName = document.getElementById('signup-name').value;
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            messageEl.textContent = "Error: " + error.message;
+            return;
+        }
+
+        if (data.user) {
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .insert({ id: data.user.id, full_name: fullName });
+            
+            if (profileError) {
+                messageEl.textContent = "Error creating profile: " + profileError.message;
+            } else {
+                messageEl.textContent = "साइन-अप सफल! कन्फर्म करने के लिए अपना ईमेल चेक करें।";
+            }
+        }
+    });
+
+    // --- Login Form Handler ---
+    loginFormContainer.querySelector('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        const { error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            messageEl.textContent = "Error: " + error.message;
+        } else {
+            window.location.href = "index.html";
+        }
+    });
+    
+    // --- Reset Password Form Handler ---
+    resetPasswordFormContainer.querySelector('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('reset-email').value;
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: 'https://prayog990.github.io/Shidhdhayog_meditation/login.html', // Redirect here after reset
+        });
+
+        if (error) {
+            messageEl.textContent = "Error: " + error.message;
+        } else {
+            messageEl.textContent = "पासवर्ड रीसेट लिंक आपके ईमेल पर भेज दिया गया है।";
+        }
+    });
+
+</script>
+
+</body>
+</html>
