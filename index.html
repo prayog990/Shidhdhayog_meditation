@@ -56,6 +56,13 @@
         #adminUsersTable th, #adminUsersTable td { padding: 10px; border: 1px solid #ddd; text-align: left; }
         #adminUsersTable th { background-color: #f2f2f2; }
 
+/* --- नए टैब वाले एडमिन पैनल का स्टाइल --- */
+.admin-tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 20px; }
+.admin-tab-btn { background: none; border: none; padding: 10px 15px; cursor: pointer; font-size: 16px; color: var(--modal-text-color); border-bottom: 3px solid transparent; }
+.admin-tab-btn.active { border-bottom-color: var(--modal-header-color); color: var(--modal-header-color); font-weight: bold; }
+.admin-tab-content { display: none; }
+.admin-tab-content.active { display: block; }
+
     </style>
 </head>
 <body data-theme="default-dark">
@@ -71,18 +78,33 @@
         </div>
         <button class="btn btn-settings" onclick="showSettings()">⚙️ सेटिंग्स</button>
         <button id="logout-btn" class="btn" style="background: linear-gradient(45deg, #e17055, #d63031); margin-top: 10px;">👋 लॉगआउट</button>
-        <button id="adminButton" class="btn" onclick="showAdminUsers()" style="background: linear-gradient(45deg, #2c3e50, #3498db); margin-top: 10px;">👑 यूज़र्स देखें</button>
+        <button id="adminButton" class="btn" onclick="openMasterAdminPanel()" style="background: linear-gradient(45deg, #2c3e50, #3498db); margin-top: 10px;">👑 एडमिन डैशबोर्ड</button>
     </div>
 
     <!-- Other screens and modals -->
     <div class="countdown-screen" id="countdownScreen"><div class="countdown-number" id="countdownNumber">5</div><div style="color:white;margin-top:30px;font-size:18px" data-lang-key="countdownText">ध्यान शुरू होने में...</div></div><div class="meditation-screen" id="meditationScreen"><div class="meditation-photo" id="meditationPhoto"></div><div class="timer-display" id="timerDisplay">15:00</div><div class="meditation-controls"><button class="control-btn" id="pausePlayBtn" onclick="togglePausePlay()" data-lang-key="pause">रोकें</button><button class="control-btn" onclick="restartMeditation()" data-lang-key="restart">फिर शुरू करें</button><button class="control-btn" onclick="goBack()" data-lang-key="back">वापस</button><button id="skipButton" class="control-btn" onclick="skipMeditationTimer()" style="display:none;background:#c0392b" data-lang-key="skipTimer">टाइमर स्किप</button></div><div class="bottom-popup" id="endScreenMessage" style="display:none"><p data-lang-key="completionMessage">🙏 ध्यान पूर्ण हुआ 🙏</p><button class="btn btn-start" id="okButton">ठीक है</button></div><div id="finalControls" class="meditation-controls" style="opacity:0;pointer-events:none"><button class="btn btn-start" onclick="goBack(false)" data-lang-key="finalBackButton">वापस जाएं</button></div></div><div class="mantra-controls" id="mantraControls"><button class="control-btn" onclick="skipMantra()" data-lang-key="skipMantra">⏭️ मंत्र स्किप</button></div><div class="modal" id="settingsModal"><div class="modal-content"><button class="modal-close-btn" onclick="closeSettings()">×</button><h3 data-lang-key="settingsTitle">⚙️ सेटिंग्स</h3><div class="form-group"><label data-lang-key="languageLabel">भाषा</label><select id="languageSelect" onchange="changeLanguage(this.value)"><option value="hindi">हिन्दी</option><option value="english">English</option></select></div><div class="form-group"><label data-lang-key="themeLabel">थीम</label><select id="themeSelect" onchange="changeTheme(this.value)"></select></div><div class="form-group"><label data-lang-key="timeLabel">ध्यान का समय (मिनट)</label><div class="time-stepper"><button id="timeDecrement">-</button><span id="timeValue">15</span><button id="timeIncrement">+</button></div></div><div class="form-group"><label data-lang-key="bgColorLabel">ध्यान स्क्रीन का रंग</label><input type="color" id="meditationBgColor" class="color-picker"></div><div style="text-align:center;color:#777;margin-top:20px"><p data-lang-key="settingsInfo">मंत्र, अलार्म और गुरुदेव की फोटो पहले से ही सेट हैं।</p></div></div></div><div class="modal" id="adminModal"><div class="modal-content" style="max-width:500px"><button class="modal-close-btn" onclick="closeAdminPanel()">×</button><h3 data-lang-key="adminPanelTitle">👨‍💼 एडमिन पैनल</h3><div class="form-group"><label data-lang-key="mainTitleLabel"><strong>मुख्य शीर्षक</strong></label><input type="text" id="adminMainTitle"></div><div class="form-group"><label data-lang-key="meditationStepsLabel"><strong>ध्यान की विधि (हर लाइन नई)</strong></label><textarea id="adminMeditationSteps" rows="5"></textarea></div><div class="form-group"><label data-lang-key="benefitsLabel"><strong>ध्यान के लाभ (हर लाइन नया)</strong></label><textarea id="adminBenefits" rows="4"></textarea></div><div class="form-group"><label data-lang-key="appUsageLabel"><strong>ऐप का उपयोग (हर लाइन नई)</strong></label><textarea id="adminAppUsage" rows="4"></textarea></div><div class="form-group"><label data-lang-key="extraInfoLabel"><strong>अतिरिक्त जानकारी (वैकल्पिक)</strong></label><textarea id="adminExtraInfo" rows="3"></textarea></div><div style="display:flex;gap:10px;margin-top:30px"><button class="btn btn-start" onclick="saveAdminSettings()" style="flex:1" data-lang-key="saveButton">💾 सेव करें</button><button class="btn btn-info" onclick="previewInfo()" style="flex:1" data-lang-key="previewButton">👁️ प्रीव्यू</button></div></div></div><div class="modal" id="infoModal"><div class="modal-content"><button class="modal-close-btn" onclick="closeInfo()">×</button><h3 id="infoTitle" data-lang-key="howToTitle">🧘‍♂️ ध्यान कैसे करें</h3><div class="info-content" id="infoContentDiv"></div><button class="btn btn-info" onclick="closeInfo()" style="width:100%;margin-top:20px" data-lang-key="gotItButton">✅ समझ गया</button></div></div><div class="modal" id="confirmModal"><div class="modal-content"><p id="confirmMessage">क्या आप निश्चित हैं?</p><div class="confirm-buttons"><button id="confirmYes" class="btn btn-start">हाँ</button><button id="confirmNo" class="btn btn-info">नहीं</button></div></div></div>
     
-    <!-- ✅ नया: Admin Users Modal -->
-    <div class="modal" id="adminUsersModal">
-        <div class="modal-content">
-            <button class="modal-close-btn" onclick="closeModal('adminUsersModal')">×</button>
-            <h3>👑 सभी यूज़र्स</h3>
-            <div id="adminUsersContent" style="overflow-x:auto;">Loading...</div>
+    <!-- ✅ --- नया All-in-One एडमिन पैनल --- ✅ -->
+    <div class="modal" id="masterAdminModal">
+        <div class="modal-content" style="max-width: 90%; width: 600px;">
+            <button class="modal-close-btn" onclick="closeModal('masterAdminModal')">×</button>
+            <h3>👑 एडमिन डैशबोर्ड</h3>
+            
+            <!-- Tab Buttons -->
+            <div class="admin-tabs">
+                <button class="admin-tab-btn active" onclick="showAdminTab('users', this)">यूज़र्स लिस्ट</button>
+                <button class="admin-tab-btn" onclick="showAdminTab('content', this)">कंटेंट एडिटर</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="adminTabContentUsers" class="admin-tab-content active">
+                <h4>सभी यूज़र्स</h4>
+                <div id="adminUsersContent" style="overflow-x:auto;">लोड हो रहा है...</div>
+            </div>
+
+            <div id="adminTabContentContent" class="admin-tab-content">
+                <!-- पुराना कंटेंट एडमिन पैनल यहाँ लोड होगा -->
+            </div>
         </div>
     </div>
 
@@ -132,20 +154,51 @@
                 document.getElementById('meditationCounter').textContent = `आपने अब तक ${profile.meditation_count || 0} बार ध्यान किया है।`;
                 // ✅ Admin Button Logic
                 if (profile.is_admin) {
-                    document.getElementById('adminButton').style.display = 'block';
+                    // पुराने 5-क्लिक वाले कोड की अब ज़रूरत नहीं, हम सीधे बटन दिखाएँगे
+                    // document.getElementById('adminButton').style.display = 'block';
                 }
             }
         })();
         
-        // ✅ नया: Admin Panel Function
-        async function showAdminUsers() {
-            showModal('adminUsersModal');
+        // ✅ --- नया All-in-One एडमिन पैनल का पूरा लॉजिक --- ✅
+        function openMasterAdminPanel() {
+            showModal('masterAdminModal');
+            // पैनल खोलते ही यूज़र्स टैब पर क्लिक करवा दो ताकि डेटा लोड हो जाए
+            document.querySelector('.admin-tab-btn').click();
+        }
+
+        function showAdminTab(tabName, clickedButton) {
+            // सारे टैब कंटेंट को छिपाओ और बटन से active क्लास हटाओ
+            document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
+
+            // सही टैब और बटन को दिखाओ
+            const contentId = `adminTabContent${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`;
+            document.getElementById(contentId).classList.add('active');
+            clickedButton.classList.add('active');
+
+            // अगर यूज़र्स टैब है, तो डेटा लोड करो
+            if (tabName === 'users') {
+                loadAllUsers();
+            } 
+            // अगर कंटेंट टैब है, तो पुराना एडमिन फॉर्म लोड करो
+            else if (tabName === 'content') {
+                const contentDiv = document.getElementById('adminTabContentContent');
+                // अगर कंटेंट पहले से लोड नहीं है तो ही लोड करो
+                if (contentDiv.innerHTML.trim() === '') {
+                    const adminModalContent = document.getElementById('adminModal').querySelector('.modal-content');
+                    contentDiv.innerHTML = adminModalContent.innerHTML;
+                    // नए पॉप-अप से क्लोज बटन हटा दो ताकि कन्फ्यूजन न हो
+                    contentDiv.querySelector('.modal-close-btn').remove();
+                }
+            }
+        }
+
+        async function loadAllUsers() {
             const contentDiv = document.getElementById('adminUsersContent');
             contentDiv.innerHTML = 'यूज़र्स का डेटा लोड हो रहा है...';
 
-            const { data: users, error } = await supabase
-                .from('profiles')
-                .select('full_name, meditation_count');
+            const { data: users, error } = await supabase.from('profiles').select('full_name, meditation_count');
 
             if (error) {
                 contentDiv.innerHTML = 'डेटा लाने में erreur हुई: ' + error.message;
