@@ -132,7 +132,13 @@
     <script>
         const SUPABASE_URL = "https://dskxbznrmnytmvcrllja.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRza3hiem5ybW55dG12Y3JsbGphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3OTc2NDIsImV4cCI6MjA3MzM3MzY0Mn0.jTNx3kdO5K8tDtfwNPm1MrFD3TDiyybPOzv5oC4diGg";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = window.supabase.createClient(
+  "https://dskxbznrmnytmvcrllja.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRza3hiem5ybW55dG12Y3JsbGphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3OTc2NDIsImV4cCI6MjA3MzM3MzY0Mn0.jTNx3kdO5K8tDtfwNPm1MrFD3TDiyybPOzv5oC4diGg",
+  {
+    auth: { persistSession: true, autoRefreshToken: true }
+  }
+);
 
         function showToast(message) {
             const toast = document.getElementById('toast-notification');
