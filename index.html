@@ -481,23 +481,31 @@
         }
     }
         function updateVisibility(state) {
-            const medScreen = document.getElementById('meditationScreen');
-            const countdownScreen = document.getElementById('countdownScreen');
-            const mantraControls = document.getElementById('mantraControls');
-            const meditationControls = document.querySelector('.meditation-controls');
-            const timerDisplay = document.getElementById('timerDisplay');
-            const endScreenMessage = document.getElementById('endScreenMessage');
-            const finalControls = document.getElementById('finalControls');
-            [countdownScreen, mantraControls, meditationControls, timerDisplay, endScreenMessage, finalControls].forEach(el => el.style.display = 'none');
-            medScreen.classList.remove('controls-visible');
-            switch(state) {
-                case 'mantra': mantraControls.style.display = 'flex'; break;
-                case 'countdown': countdownScreen.style.display = 'flex'; break;
-                case 'meditating': meditationControls.style.display = 'flex'; timerDisplay.style.display = 'block'; break;
-                case 'finished': endScreenMessage.style.display = 'block'; break;
-                case 'final': finalControls.style.display = 'flex'; finalControls.style.opacity = '1'; finalControls.style.pointerEvents = 'auto'; break;
-            }
+        const medScreen = document.getElementById('meditationScreen');
+        const countdownScreen = document.getElementById('countdownScreen');
+        const mantraControls = document.getElementById('mantraControls');
+        const meditationControlsWrapper = document.querySelector('.meditation-controls-wrapper');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const endScreenMessage = document.getElementById('endScreenMessage');
+        const finalControls = document.getElementById('finalControls');
+        // Hide all potential elements first
+        [countdownScreen, mantraControls, meditationControlsWrapper, timerDisplay, endScreenMessage, finalControls].forEach(el => {
+            if(el) el.style.display = 'none';
+        });
+        medScreen.classList.remove('controls-visible');
+        
+        // Show the correct elements based on state
+        switch(state) {
+            case 'mantra': mantraControls.style.display = 'flex'; break;
+            case 'countdown': countdownScreen.style.display = 'flex'; break;
+            case 'meditating': 
+                if(meditationControlsWrapper) meditationControlsWrapper.style.display = 'flex'; 
+                timerDisplay.style.display = 'block'; 
+                break;
+            case 'finished': endScreenMessage.style.display = 'block'; break;
+            case 'final': finalControls.style.display = 'flex'; finalControls.style.opacity = '1'; finalControls.style.pointerEvents = 'auto'; break;
         }
+    }
 
         // --- MODALS & SETTINGS ---
         function showModal(id) { const el = document.getElementById(id); el.style.display = 'flex'; setTimeout(() => el.classList.add('visible'), 10); }
@@ -594,24 +602,23 @@ function showConfirmation(messageKey, onConfirm) {
             });
 
             // ## यहाँ 7-टैप वाला कोड वापस जोड़ा गया है ##
-            let tapCount = 0, tapTimer = null;
-            document.getElementById('meditationScreen').addEventListener('click', function(event) {
-                if (event.target.closest('.control-btn, .bottom-popup, .btn')) return;
-                const medControls = document.querySelector('.meditation-controls');
-                if (medControls.style.display === 'flex') {
-                    this.classList.toggle('controls-visible');
-                    clearTimeout(tapTimer);
-                    tapCount++;
-                    if (tapCount >= 7) {
-                        document.getElementById('skipButton').style.display = 'flex';
-                        tapCount = 0;
-                    }
-                    tapTimer = setTimeout(() => {
-                        tapCount = 0;
-                    }, 2000);
+        let tapCount = 0, tapTimer = null;
+        document.getElementById('meditationScreen').addEventListener('click', function(event) {
+            if (event.target.closest('.control-btn, .bottom-popup, .btn')) return;
+            const medControlsWrapper = document.querySelector('.meditation-controls-wrapper');
+            if (medControlsWrapper && medControlsWrapper.style.display === 'flex') {
+                this.classList.toggle('controls-visible');
+                clearTimeout(tapTimer);
+                tapCount++;
+                if (tapCount >= 7) {
+                    document.getElementById('skipButton').style.display = 'flex';
+                    tapCount = 0;
                 }
-            });
-
+                tapTimer = setTimeout(() => {
+                    tapCount = 0;
+                }, 2000);
+            }
+        });
             document.getElementById('okButton').addEventListener('click', function() {
                 if (alarmAudio) { alarmAudio.pause(); alarmAudio.currentTime = 0; alarmAudio.loop = false; }
                 updateVisibility('final');
