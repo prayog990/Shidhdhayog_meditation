@@ -97,13 +97,17 @@
         .btn-settings { background: var(--tertiary-btn-bg); width: 100%; margin-bottom: 20px; }
         .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
         #adminButton { display: none; }
-        .meditation-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--meditation-screen-bg); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; cursor: default; }
+        .meditation-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--meditation-screen-bg); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; cursor: default; opacity: 1; transition: opacity 0.4s ease-out; }
+      .meditation-screen.hiding { opacity: 0; }
         .meditation-photo { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #666; font-size: 18px; background: transparent; }
         .meditation-photo img { max-width: 100%; max-height: 100%; object-fit: contain; }
         .timer-display { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 28px; background: var(--timer-bg); color: var(--timer-text); padding: 8px 20px; border-radius: 20px; font-weight: 300; text-shadow: 1px 1px 5px rgba(0,0,0,0.6); font-family: 'Courier New', monospace; letter-spacing: 2px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
         .meditation-controls { position: absolute; bottom: calc(30px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 20px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease, bottom 0.3s ease; }
-        .meditation-screen.controls-visible .timer-display, .meditation-screen.controls-visible .meditation-controls { opacity: 1; pointer-events: auto; }
+        .meditation-screen.controls-visible .timer-display, .meditation-screen.controls-visible .meditation-controls-wrapper { opacity: 1; pointer-events: auto; }
+    .meditation-controls-wrapper { position: absolute; bottom: calc(30px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease, bottom 0.3s ease; }
+    #skipButton { display: none; background: #c0392b !important; border-color: rgba(255,255,255,0.4) !important; }
         .control-btn { padding: 12px 25px; border-radius: 30px; font-size: 16px; font-weight: 600; min-width: 100px; text-align: center; background: var(--control-btn-bg); border: 1px solid var(--control-btn-border); color: white; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.4s ease; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
+      .btn-back { background: rgba(0,0,0,0.2) !important; border-color: rgba(255,255,255,0.2) !important; }
         .control-btn:hover { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.6); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         .countdown-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-gradient); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1001; }
         .countdown-number { font-size: 130px; color: white; font-weight: bold; text-shadow: 4px 4px 15px rgba(0,0,0,0.4); animation: pulse 1s ease-in-out; font-family: 'Segoe UI', sans-serif; }
@@ -183,11 +187,13 @@
     <div class="meditation-screen" id="meditationScreen">
         <div class="meditation-photo" id="meditationPhoto"></div>
         <div class="timer-display" id="timerDisplay">15:00</div>
-        <div class="meditation-controls">
-            <button class="control-btn" id="pausePlayBtn" onclick="togglePausePlay()" data-lang-key="pause">रोकें</button>
-            <button class="control-btn" onclick="restartMeditation()" data-lang-key="restart">फिर शुरू करें</button>
-            <button class="control-btn" onclick="goBack()" data-lang-key="back">वापस</button>
-            <button id="skipButton" class="control-btn" onclick="skipMeditationTimer()" style="display:none; background: #c0392b;" data-lang-key="skipTimer">टाइमर स्किप</button>
+        <div class="meditation-controls-wrapper">
+            <button id="skipButton" class="control-btn" onclick="skipMeditationTimer()" data-lang-key="skipTimer">टाइमर स्किप</button>
+            <div class="meditation-controls">
+                <button class="control-btn" id="pausePlayBtn" onclick="togglePausePlay()" data-lang-key="pause">रोकें</button>
+                <button class="control-btn" onclick="restartMeditation()" data-lang-key="restart">फिर शुरू करें</button>
+                <button class="control-btn btn-back" onclick="goBack()" data-lang-key="back">वापस</button>
+            </div>
         </div>
         <div class="bottom-popup" id="endScreenMessage" style="display: none;">
             <p data-lang-key="completionMessage">🙏 ध्यान पूर्ण हुआ 🙏</p>
@@ -446,20 +452,34 @@
             if (totalSeconds > 0) { totalSeconds = 1; document.getElementById('skipButton').style.display = 'none'; }
         }
         function goBack(confirmFirst = true) {
-            const doGoBack = () => {
-                clearInterval(meditationTimer);
-                clearInterval(countdownTimer);
-                if (mantraAudio) { mantraAudio.pause(); mantraAudio.currentTime = 0; }
-                if(alarmAudio) { alarmAudio.pause(); alarmAudio.currentTime = 0; alarmAudio.loop = false; }
-                isMantraPlaying = false;
-                meditationTimer = null;
-                document.getElementById('meditationScreen').style.display = 'none';
-                releaseWakeLock();
-                if (document.exitFullscreen) { document.exitFullscreen(); }
-            };
-            if (confirmFirst && meditationTimer) { showConfirmation('stopConfirm', doGoBack); } 
-            else { doGoBack(); }
+        const doGoBack = () => {
+            // Clear timers and audio
+            clearInterval(meditationTimer);
+            clearInterval(countdownTimer);
+            if (mantraAudio) { mantraAudio.pause(); mantraAudio.currentTime = 0; }
+            if(alarmAudio) { alarmAudio.pause(); alarmAudio.currentTime = 0; alarmAudio.loop = false; }
+            isMantraPlaying = false;
+            meditationTimer = null;
+            
+            const medScreen = document.getElementById('meditationScreen');
+            medScreen.classList.add('hiding'); // Start fade-out animation
+
+            // Wait for animation to finish before hiding the screen
+            setTimeout(() => {
+                medScreen.style.display = 'none';
+                medScreen.classList.remove('hiding'); // Reset for next time
+            }, 400); // Must match CSS transition duration
+
+            releaseWakeLock();
+            if (document.exitFullscreen) { document.exitFullscreen(); }
+        };
+
+        if (confirmFirst && meditationTimer) {
+            showConfirmation('stopConfirm', doGoBack);
+        } else {
+            doGoBack();
         }
+    }
         function updateVisibility(state) {
             const medScreen = document.getElementById('meditationScreen');
             const countdownScreen = document.getElementById('countdownScreen');
