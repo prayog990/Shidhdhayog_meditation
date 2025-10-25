@@ -106,7 +106,24 @@
         .meditation-screen.controls-visible .timer-display, .meditation-screen.controls-visible .meditation-controls-wrapper { opacity: 1; pointer-events: auto; }
     .meditation-controls-wrapper { position: absolute; bottom: calc(30px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease, bottom 0.3s ease; }
     #skipButton { display: none; background: #c0392b !important; border-color: rgba(255,255,255,0.4) !important; }
-        .control-btn { padding: 12px 25px; border-radius: 30px; font-size: 16px; font-weight: 600; min-width: 100px; text-align: center; background: var(--control-btn-bg); border: 1px solid var(--control-btn-border); color: white; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.4s ease; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
+        .control-btn {
+            padding: 12px 20px; /* पैडिंग को थोड़ा एडजस्ट किया */
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            background: rgba(70, 70, 70, 0.6); /* बैकग्राउंड को कम पारदर्शी बनाया */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* बॉर्डर को थोड़ा बेहतर किया */
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap; /* यह टेक्स्ट को एक लाइन में रखेगा */
+        }
       .btn-back { background: rgba(0,0,0,0.2) !important; border-color: rgba(255,255,255,0.2) !important; }
         .control-btn:hover { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.6); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         .countdown-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-gradient); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1001; }
